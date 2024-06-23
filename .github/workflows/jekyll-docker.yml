@@ -1,0 +1,32 @@
+name: Jekyll site CI and Deploy
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build_and_deploy:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Docker
+      run: docker pull jekyll/builder:latest
+
+    - name: Build the Jekyll site
+      run: |
+        docker run \
+        -v ${{ github.workspace }}/MinWathan.github.io/accessory:/srv/jekyll \
+        -v ${{ github.workspace }}/MinWathan.github.io/accessory/_site:/srv/jekyll/_site \
+        jekyll/builder:latest /bin/bash -c "chmod -R 777 /srv/jekyll && jekyll build --future"
+
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: MinWathan.github.io/accessory/_site
